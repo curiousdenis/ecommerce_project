@@ -1,16 +1,23 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import common
+import sqlite3
+from sqlite3 import Connection
+from flask import g
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+#During a request, every call to get_db() will return the same connection
+#and it will be closed automatically at the end of the request.
+def get_db() -> Connection:
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(common.DATABASE)
+    return db
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+@app.teardown_appcontext
+def close_connection(exception) -> None:
+    db = getattr(g, '_database', None)
+    if db is None:
+        db.close()
+
+def create_app(config_filename = None):
+    pass
+
