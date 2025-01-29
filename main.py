@@ -16,13 +16,14 @@ class Customer(CustomerBase, table = True):
             format(type(self).__name__, self.name, self.surname,self.id)
 
 class CustomerCreate(CustomerBase):
-    """It is a model to show user what they shood provide to create customer"""
+    """It is a model to show user what they should provide to create customer"""
     pass
 
 class CustomerUpdate(CustomerBase):
     login: Optional[str]
     name: Optional[str]
     surname: Optional[str]
+
 
 
 sqlite_file_name = "database.db"
@@ -69,4 +70,13 @@ def update_customer(customer_id: int, customer_input: CustomerUpdate, session: S
             setattr(customer, key, value)
     session.commit()
     session.refresh(customer)
+    return customer
+
+@app.delete("/delete_customer/{customer_id}", status_code=status.HTTP_200_OK, response_model=Customer)
+def delete_customer(customer_id: int, session: SessionDep):
+    customer = session.get(Customer, customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail='Such customer does not exist')
+    session.delete(customer)
+    session.commit()
     return customer
